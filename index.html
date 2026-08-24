@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Order – Bug & Bear's Kitchen</title>
+    <script src="https://ka3chi.github.io/bbk-chatbot/chat.js?v=2"></script>
+    <script>
+    localStorage.removeItem('bbchat_session');
+    BBChat.init({
+        webhookUrl: 'https://wideout.app.n8n.cloud/webhook/c110a452-0503-425a-8488-0e8490115d5b/chat',
+        botName:        "Cookie Wizard",
+        welcomeMessage: "Hi! Welcome to Bug & Bear's Kitchen 👋  \n What can I help you with today? We offer custom cookie, corporate cookies and cookie design classes.",
+        primaryColor:   '#5BA4B5',
+        buttonColor:    '#007D99',
+        accentColor:    '#FAD02C',
+        position:       'bottom-right',
+        welcomeButtons: ['Custom Cookies 🍪', 'Corporate Cookies 💼'],
+    });
+
+    window.addEventListener('message', function(e) {
+        if (e.data === 'openBBChat') {
+            var btn = document.getElementById('bbchat-btn');
+            if (btn) btn.click();
+        }
+    });
+    </script>
+</head>
+<body>
+    
+</body>
+</html>
