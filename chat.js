@@ -1098,15 +1098,24 @@
     const normalizedMessage = message.trim().toLowerCase();
 
     const isReferencePhotoStep =
+      /do you have a photo or inspiration/i.test(previousBotText) ||
+      /do you have a photo or inspiration you'd like us to see/i.test(previousBotText) ||
+      /upload it here or paste a google drive link/i.test(previousBotText) ||
+      /if not,\s*just type skip/i.test(previousBotText) ||
       /upload your reference photo/i.test(previousBotText) ||
       /upload the logo you'd like us to use/i.test(previousBotText) ||
       /reference photo now/i.test(previousBotText) ||
       /paste the image'?s google drive link/i.test(previousBotText) ||
       /paste the image.*google drive link/i.test(previousBotText);
 
-    if (normalizedMessage === 'skip' && isReferencePhotoStep) {
+    const isMockupApprovalStep =
+      /does this feel like the right direction/i.test(previousBotText) ||
+      /do you like this design/i.test(previousBotText) ||
+      /do you like the design/i.test(previousBotText);
+
+    if (normalizedMessage === 'skip' && isReferencePhotoStep && !isMockupApprovalStep) {
       this._addMessage(
-        "✨ Got it! I’m generating your cookie mockup now — this may take a moment. 🍪",
+        "Got it! ✨ We’ll create a first look for your cookies now. 🍪",
         'bot'
       );
     }
