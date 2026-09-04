@@ -1,192 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Order – Bug & Bear's Kitchen</title>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+  <!-- v5 forces browsers to fetch the new chat.js instead of an old cached copy -->
+  <script src="https://ka3chi.github.io/bbk-chatbot/chat.js?v=5"></script>
 
-    <title>
-        Custom Order – Bug & Bear's Kitchen
-    </title>
-
-
-    <!--
-        BBK CHATBOT
-        v=4 contains the first-time email verification resume logic.
-    -->
-    <script src="https://ka3chi.github.io/bbk-chatbot/chat.js?v=4"></script>
-
-
-    <script>
-    /*
-     * ============================================================
-     * BUG & BEAR'S KITCHEN CHATBOT
-     * ============================================================
-     *
-     * IMPORTANT:
-     *
-     * DO NOT use:
-     *
-     * localStorage.removeItem('bbchat_session');
-     *
-     * The session must remain stored so a first-time customer can
-     * return after email verification and continue the same inquiry.
-     *
-     * Customers whose email has already been verified will simply
-     * use the normal chatbot flow.
-     * ============================================================
-     */
-
+  <script>
     BBChat.init({
+      webhookUrl:
+        'https://wideout.app.n8n.cloud/webhook/c110a452-0503-425a-8488-0e8490115d5b/chat',
 
-        /*
-         * --------------------------------------------------------
-         * MAIN N8N CHATBOT WEBHOOK
-         * --------------------------------------------------------
-         */
-        webhookUrl:
-            'https://wideout.app.n8n.cloud/webhook/c110a452-0503-425a-8488-0e8490115d5b/chat',
+      resumeWebhookUrl:
+        'https://wideout.app.n8n.cloud/webhook/bbk-chat-resume',
 
+      resumeCompleteWebhookUrl:
+        'https://wideout.app.n8n.cloud/webhook/bbk-resume-complete',
 
-        /*
-         * --------------------------------------------------------
-         * EMAIL VERIFICATION RESUME WEBHOOK
-         * --------------------------------------------------------
-         *
-         * chat.js checks this endpoint when the widget loads.
-         *
-         * n8n should return:
-         *
-         * {
-         *   "ok": true,
-         *   "resume": true,
-         *   "sessionId": "...",
-         *   "email": "...",
-         *   "mockupUrl": "..."
-         * }
-         *
-         * ONLY when a first-time customer has just completed
-         * email verification.
-         *
-         * Otherwise n8n should return:
-         *
-         * {
-         *   "ok": true,
-         *   "resume": false
-         * }
-         */
-        resumeWebhookUrl:
-            'https://wideout.app.n8n.cloud/webhook/bbk-chat-resume',
+      botName: 'Cookie Wizard',
 
+      welcomeMessage:
+        "Hi! Welcome to Bug & Bear’s Kitchen 👋🍪\n\n" +
+        "What are we celebrating? ✨\n" +
+        "Whether it’s a birthday, wedding, corporate event, or something else, " +
+        "tell us what’s coming up and we’ll help bring your cookie idea to life!",
 
-        /*
-         * --------------------------------------------------------
-         * CHATBOT NAME
-         * --------------------------------------------------------
-         */
-        botName:
-            "Cookie Wizard",
+      primaryColor: '#5BA4B5',
+      buttonColor: '#007D99',
+      accentColor: '#FAD02C',
+      position: 'bottom-right',
 
+      // Must match the verification-token lifetime in n8n.
+      verificationHoldMs: 24 * 60 * 60 * 1000,
 
-        /*
-         * --------------------------------------------------------
-         * WELCOME MESSAGE
-         * --------------------------------------------------------
-         *
-         * This continues to appear normally for new conversations.
-         *
-         * It will NOT be shown again when a first-time customer
-         * returns immediately after successful email verification.
-         */
-        welcomeMessage:
-            "Hi! Welcome to Bug & Bear’s Kitchen 👋🍪\n\n" +
-            "What are we celebrating? ✨\n" +
-            "Whether it’s a birthday, wedding, corporate event, " +
-            "or something else, tell us what’s coming up and " +
-            "we’ll help bring your cookie idea to life!",
-
-
-        /*
-         * --------------------------------------------------------
-         * COLORS
-         * --------------------------------------------------------
-         */
-        primaryColor:
-            '#5BA4B5',
-
-        buttonColor:
-            '#007D99',
-
-        accentColor:
-            '#FAD02C',
-
-
-        /*
-         * --------------------------------------------------------
-         * CHAT POSITION
-         * --------------------------------------------------------
-         */
-        position:
-            'bottom-right',
-
-
-        /*
-         * --------------------------------------------------------
-         * WELCOME QUICK-CLICK BUTTONS
-         * --------------------------------------------------------
-         */
-        welcomeButtons: [
-            '🎂 Birthday',
-            '💍 Wedding',
-            '👶 Baby Shower',
-            '🏢 Corporate Event',
-            '🎉 Other Celebration'
-        ]
-
+      welcomeButtons: [
+        '🎂 Birthday',
+        '💍 Wedding',
+        '👶 Baby Shower',
+        '🏢 Corporate Event',
+        '🎉 Other Celebration'
+      ]
     });
 
-
-    /*
-     * ============================================================
-     * WIX / PARENT PAGE OPEN CHAT MESSAGE
-     * ============================================================
-     *
-     * Keep this because your Wix setup can send:
-     *
-     * openBBChat
-     *
-     * to this embedded widget.
-     */
-    window.addEventListener(
-        'message',
-        function (e) {
-
-            if (e.data === 'openBBChat') {
-
-                var btn =
-                    document.getElementById(
-                        'bbchat-btn'
-                    );
-
-                if (btn) {
-                    btn.click();
-                }
-
-            }
-
-        }
-    );
-
-    </script>
-
+    window.addEventListener('message', function (e) {
+      if (e.data === 'openBBChat') {
+        var btn = document.getElementById('bbchat-btn');
+        if (btn) btn.click();
+      }
+    });
+  </script>
 </head>
-
-
 <body>
-
 </body>
-
 </html>
