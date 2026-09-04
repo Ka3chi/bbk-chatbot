@@ -15,7 +15,7 @@
   'use strict';
 
   const OPEN_TRACK_URL =
-    'https://wox-automation.app.n8n.cloud/webhook/99538a32-402a-4cd7-9b64-d88c462fdeaf';
+    'https://wideout.app.n8n.cloud/webhook/99538a32-402a-4cd7-9b64-d88c462fdeaf';
 
   const STORAGE = {
     session: 'bbchat_session',
