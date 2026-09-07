@@ -2798,8 +2798,7 @@
           botText =
             'Your email is confirmed! ✨\n\n' +
             '**Do you like this design?**\n\n' +
-            '**Yes**\n' +
-            '**No**';
+            '**[Yes/NO]**\n';
         }
 
         this._addMessage(
