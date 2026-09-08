@@ -127,6 +127,7 @@
     .bbchat-header-title-wrap svg {
       width: 28px;
       height: 28px;
+      flex-shrink: 0;
     }
 
     .bbchat-header h3 {
@@ -536,6 +537,7 @@
             d="M20.5 12.5a7.7 7.7 0 0 1-8 7.5A8 8 0 1 1 12 4c.2 1.5 1.5 2.7 3.1 2.7.4 0 .7-.1 1-.2.1 1.5 1.4 2.7 2.9 2.7.4 0 .7-.1 1-.2.3 1 .5 2.1.5 3.5ZM8.2 9.2a1.1 1.1 0 1 0 0-2.2 1.1 1.1 0 0 0 0 2.2Zm1.3 5.2a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4Zm5 2.1a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
           />
         </svg>
+        
       </button>
 
       <div id="bbchat-container">
@@ -549,14 +551,8 @@
             class="bbchat-header-title-wrap"
           >
 
-            <svg
-              viewBox="0 0 24 24"
-              fill="${cfg.accentColor}"
-              aria-hidden="true"
-            >
-              <path
-                d="M20.5 12.5a7.7 7.7 0 0 1-8 7.5A8 8 0 1 1 12 4c.2 1.5 1.5 2.7 3.1 2.7.4 0 .7-.1 1-.2.1 1.5 1.4 2.7 2.9 2.7.4 0 .7-.1 1-.2.3 1 .5 2.1.5 3.5Z"
-              />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="270 0 290 305">
+              <path fill="#FAD02C" d="..."/>
             </svg>
 
             <h3>${cfg.botName}</h3>
