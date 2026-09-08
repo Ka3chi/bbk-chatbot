@@ -569,6 +569,93 @@
           </button>
 
         </div>
+
+        <div
+          class="bbchat-messages"
+          id="bbchat-messages"
+        ></div>
+
+        <div
+          class="bbchat-file-preview"
+          id="bbchat-file-preview"
+        >
+
+          <div
+            class="bbchat-file-preview-content"
+            id="bbchat-preview-content"
+          ></div>
+
+          <button
+            id="bbchat-remove-all"
+            class="bbchat-icon-btn"
+            title="Remove all"
+          >
+            ✕
+          </button>
+
+        </div>
+
+        <div
+          class="bbchat-input-wrap"
+          id="bbchat-input-wrap"
+        >
+
+          <div
+            class="bbchat-drag-overlay"
+            id="bbchat-drag-overlay"
+          >
+            <span>
+              📷 Drop image here
+            </span>
+          </div>
+
+          <input
+            class="bbchat-file-input"
+            id="bbchat-file-input"
+            type="file"
+            accept="image/jpeg,image/jpg,image/png"
+            multiple
+          >
+
+          <button
+            class="bbchat-icon-btn"
+            id="bbchat-attach"
+            title="Attach image"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="${cfg.accentColor}"
+            >
+              <path
+                d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"
+              />
+            </svg>
+          </button>
+
+          <input
+            type="text"
+            id="bbchat-input"
+            placeholder="${cfg.placeholder}"
+          >
+
+          <button
+            class="bbchat-icon-btn"
+            id="bbchat-send"
+            title="Send"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="${cfg.primaryColor}"
+            >
+              <path
+                d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"
+              />
+            </svg>
+          </button>
+
+        </div>
+
+      </div>
     `;
   }
 
