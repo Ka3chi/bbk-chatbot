@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,19 +6,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Custom Order – Bug & Bear's Kitchen</title>
 
-  <!-- v5 forces browsers to fetch the new chat.js instead of an old cached copy -->
-  <script src="https://ka3chi.github.io/bbk-chatbot/chat.js?v=5"></script>
+  <!-- Updated BBK Chatbot v6 -->
+  <script src="https://ka3chi.github.io/bbk-chatbot/chat.js?v=6-event"></script>
 
   <script>
     BBChat.init({
+
+      // Existing main Cookie Wizard webhook
       webhookUrl:
         'https://wideout.app.n8n.cloud/webhook/c110a452-0503-425a-8488-0e8490115d5b/chat',
 
+      // Existing email verification resume
       resumeWebhookUrl:
         'https://wideout.app.n8n.cloud/webhook/bbk-chat-resume',
 
       resumeCompleteWebhookUrl:
         'https://wideout.app.n8n.cloud/webhook/bbk-resume-complete',
+
+      // NEW: BBK Christmas event campaign
+      eventPromoWebhookUrl:
+        'https://wideout.app.n8n.cloud/webhook/bbk-event-engagement',
 
       botName: 'Cookie Wizard',
 
@@ -32,7 +40,6 @@
       accentColor: '#FAD02C',
       position: 'bottom-right',
 
-      // Must match the verification-token lifetime in n8n.
       verificationHoldMs: 24 * 60 * 60 * 1000,
 
       welcomeButtons: [

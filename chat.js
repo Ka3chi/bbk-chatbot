@@ -1,6 +1,6 @@
 /*!
  * BBChat — Bug & Bear's Kitchen Cookie Wizard
- * v5 — strict session lifecycle + email-verification resume
+ * v6 — preserves strict session lifecycle and adds Christmas event UTM recognition
  *
  * Core rule:
  * - Normal/abandoned/completed inquiries are NOT persisted across page exits.
@@ -27,6 +27,9 @@
     webhookUrl: '',
     resumeWebhookUrl: '',
     resumeCompleteWebhookUrl: '',
+
+    // Optional companion webhook for Christmas QR/UTM campaign recognition.
+    eventPromoWebhookUrl: '',
 
     botName: 'Chat Assistant',
 
@@ -892,6 +895,10 @@
 
     this._initSession();
 
+    // Uses the SAME existing Cookie Wizard sessionId.
+    // No second session and no checkout-side code redemption here.
+    this._eventPromoPromise = this._initEventPromo();
+
     this._bindLifecycle();
 
     if (
@@ -1579,6 +1586,8 @@
           [],
           this.cfg.welcomeButtons
         );
+
+        this._showEventPromoWhenReady();
       }
     };
 
@@ -3058,6 +3067,15 @@
 
       try {
 
+        // Finish the companion promo init before sending the first
+        // customer message to the existing n8n Cookie Wizard workflow.
+        // If the promo service fails, the original chat still works.
+        if (this._eventPromoPromise) {
+          try {
+            await this._eventPromoPromise;
+          } catch (ignored) {}
+        }
+
         let response;
 
         if (
@@ -4071,6 +4089,190 @@
       anchorEl.appendChild(
         wrap
       );
+    };
+
+
+  /**
+   * BBK CHRISTMAS CAMPAIGN INTEGRATION (v6)
+   * - Reads UTM from Wix parent page through postMessage when inside an iframe.
+   * - Calls the existing production promotion companion webhook with the
+   *   ORIGINAL BBChat sessionId. Never creates a second ID.
+   * - Shows a recognized-promotion message in the normal chat UI.
+   * - No API secrets or checkout redemption are handled in browser JS.
+   * - Existing email-verification resume lifecycle remains unchanged.
+   */
+
+  BBChatWidget.prototype._getCampaignFromUrl =
+    function (urlString) {
+      try {
+        const url = new URL(urlString);
+        const p = url.searchParams;
+        return {
+          pageUrl: url.origin + url.pathname,
+          utm: {
+            utm_source: p.get('utm_source') || '',
+            utm_medium: p.get('utm_medium') || '',
+            utm_campaign: p.get('utm_campaign') || '',
+            utm_content: p.get('utm_content') || '',
+            utm_term: p.get('utm_term') || '',
+            discount: p.get('discount') || ''
+          }
+        };
+      } catch (e) {
+        return null;
+      }
+    };
+
+  BBChatWidget.prototype._getLandingCampaign =
+    async function () {
+      const own = this._getCampaignFromUrl(window.location.href);
+
+      // When chat.js runs directly on a page, query parameters are readable.
+      if (window.parent === window) return own;
+
+      // Wix HTML embeds are iframes and cannot read the site's address.
+      // The companion Wix Dashboard Custom Code replies to this request.
+      return new Promise(resolve => {
+        const requestId =
+          'bbk_event_' + Date.now() + '_' +
+          Math.random().toString(36).slice(2);
+        let completed = false;
+        let timeoutHandle;
+        const retryHandles = [];
+
+        const allowedParentOrigins = new Set([
+          'https://www.bugandbearskitchen.com',
+          'https://bugandbearskitchen.com'
+        ]);
+
+        const finish = function (value) {
+          if (completed) return;
+          completed = true;
+          window.removeEventListener('message', receive);
+          clearTimeout(timeoutHandle);
+          retryHandles.forEach(clearTimeout);
+          resolve(value);
+        };
+
+        const receive = event => {
+          if (event.source !== window.parent) return;
+          if (!allowedParentOrigins.has(event.origin)) return;
+          const data = event.data;
+          if (!data || typeof data !== 'object') return;
+          if (data.type !== 'BBK_EVENT_UTM_RESPONSE') return;
+          if (data.requestId !== requestId) return;
+
+          // Trust the parent only as a source of UTM *candidates*.
+          // The n8n + Apps Script backend performs the actual validation.
+          const utm = data.utm || {};
+          finish({
+            pageUrl: String(data.pageUrl || ''),
+            utm: {
+              utm_source: String(utm.utm_source || ''),
+              utm_medium: String(utm.utm_medium || ''),
+              utm_campaign: String(utm.utm_campaign || ''),
+              utm_content: String(utm.utm_content || ''),
+              utm_term: String(utm.utm_term || ''),
+              discount: String(utm.discount || '')
+            }
+          });
+        };
+
+        const askParent = function () {
+          try {
+            window.parent.postMessage({
+              type: 'BBK_EVENT_UTM_REQUEST', requestId
+            }, '*');
+          } catch (e) {
+            console.warn('[BBChat EVENT] Wix UTM request failed:', e);
+          }
+        };
+
+        window.addEventListener('message', receive);
+        askParent();
+        [300, 800, 1600].forEach(ms =>
+          retryHandles.push(setTimeout(askParent, ms))
+        );
+        timeoutHandle = setTimeout(() => finish(own), 2300);
+      });
+    };
+
+  BBChatWidget.prototype._initEventPromo =
+    async function () {
+      this.bbkEventPromo = {
+        recognized: false,
+        campaign_id: '',
+        discount_rate: 0
+      };
+      this._bbkEventPromoMessage = '';
+      this._bbkEventPromoMessageShown = false;
+
+      if (!this.cfg.eventPromoWebhookUrl) return;
+      const sessionId = String(this.sessionId || '').trim();
+      if (!sessionId) return;
+
+      const landing = await this._getLandingCampaign();
+      if (!landing || !landing.utm) return;
+      const utm = landing.utm;
+
+      // Normal visitors keep the existing Cookie Wizard flow unchanged.
+      if (!utm.utm_campaign || !utm.discount) return;
+
+      try {
+        const response = await fetch(this.cfg.eventPromoWebhookUrl, {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'omit',
+          // text/plain avoids an unnecessary JSON preflight in some browsers.
+          headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+          body: JSON.stringify({
+            event: 'init',
+            sessionId,
+            pageUrl: landing.pageUrl,
+            utm,
+            timestamp: new Date().toISOString()
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Promotion request HTTP ' + response.status);
+        }
+        const data = await response.json();
+        if (!data || data.success !== true) {
+          throw new Error((data && data.error) || 'Invalid promotion response');
+        }
+
+        // DISPLAY state only. Main n8n workflow must validate stored
+        // session state with Apps Script again at the discount step.
+        const recognized = data.has_qr_discount === true;
+        this.bbkEventPromo = {
+          recognized,
+          campaign_id: recognized ? String(data.campaign_id || '') : '',
+          discount_rate: recognized ? Number(data.discount_rate || 0) : 0
+        };
+        this._bbkEventPromoMessage =
+          recognized ? String(data.chatbot_message || '') : '';
+        this._showEventPromoWhenReady();
+        console.info('[BBChat EVENT] Campaign session checked', {
+          sessionId,
+          recognized,
+          campaign: this.bbkEventPromo.campaign_id
+        });
+      } catch (error) {
+        // Never break normal chat, email verification or mockup on promo failure.
+        console.warn('[BBChat EVENT] Promotion initialization unavailable:', error);
+      }
+    };
+
+  BBChatWidget.prototype._showEventPromoWhenReady =
+    function () {
+      if (this._bbkEventPromoMessageShown) return;
+      if (!this._bbkEventPromoMessage) return;
+      if (!this.messages || this.messages.length === 0) return;
+      if (this.awaitingVerification || this.resumeCandidate ||
+          this.resumeInProgress) return;
+      this._bbkEventPromoMessageShown = true;
+      this._addMessage(this._bbkEventPromoMessage, 'bot');
     };
 
   global.BBChat = {
