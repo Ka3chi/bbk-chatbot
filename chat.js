@@ -3061,6 +3061,7 @@
 
       const history =
         this.messages
+          .filter(m => !m.bbkEventBanner)
           .slice(-5)
           .map(
             m => ({
@@ -4394,6 +4395,11 @@
       this._bbkEventPromoMessageShown = true;
       this._hideTyping();
       this._addMessage(this._bbkEventPromoMessage, 'bot');
+      // This is a visual banner, NOT a conversation turn.
+      // Do not let it confuse the original AI Agent flow.
+      if (this.messages.length) {
+        this.messages[this.messages.length - 1].bbkEventBanner = true;
+      }
       this._addMessage(
         this.cfg.welcomeMessage,
         'bot',
