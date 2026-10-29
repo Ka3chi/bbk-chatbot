@@ -1,39 +1,34 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom Order – Bug & Bear's Kitchen</title>
+  <title>Custom Order - Bug &amp; Bear's Kitchen</title>
 
-  <!-- Updated BBK Chatbot v6 -->
-  <script src="https://ka3chi.github.io/bbk-chatbot/chat.js?v=6-event"></script>
+  <!-- Load the BBK Cookie Wizard v9 with event campaign handling -->
+  <script src="https://ka3chi.github.io/bbk-chatbot/chat.js?v=9-event"></script>
 
   <script>
     BBChat.init({
-
-      // Existing main Cookie Wizard webhook
       webhookUrl:
         'https://wideout.app.n8n.cloud/webhook/c110a452-0503-425a-8488-0e8490115d5b/chat',
 
-      // Existing email verification resume
       resumeWebhookUrl:
         'https://wideout.app.n8n.cloud/webhook/bbk-chat-resume',
 
       resumeCompleteWebhookUrl:
         'https://wideout.app.n8n.cloud/webhook/bbk-resume-complete',
 
-      // NEW: BBK Christmas event campaign
       eventPromoWebhookUrl:
         'https://wideout.app.n8n.cloud/webhook/bbk-event-engagement',
 
       botName: 'Cookie Wizard',
 
       welcomeMessage:
-        "Hi! Welcome to Bug & Bear’s Kitchen 👋🍪\n\n" +
+        "Hi! Welcome to Bug & Bear's Kitchen 👋🍪\n\n" +
         "What are we celebrating? ✨\n" +
-        "Whether it’s a birthday, wedding, corporate event, or something else, " +
-        "tell us what’s coming up and we’ll help bring your cookie idea to life!",
+        "Whether it's a birthday, wedding, corporate event, or something else, " +
+        "tell us what's coming up and we'll help bring your cookie idea to life!",
 
       primaryColor: '#5BA4B5',
       buttonColor: '#007D99',
@@ -51,6 +46,7 @@
       ]
     });
 
+    // Preserve your existing open-chat message handler.
     window.addEventListener('message', function (e) {
       if (e.data === 'openBBChat') {
         var btn = document.getElementById('bbchat-btn');
