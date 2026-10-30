@@ -865,6 +865,11 @@
     this.resumeCompleted =
       false;
 
+    // True only after the resume endpoint validated THIS session.
+    this.bbkResumedSession = false;
+    this.bbkResumeApprovalPending = false;
+    this.bbkResumedMockupApproved = false;
+
     this.resumeReason =
       '';
 
@@ -2769,58 +2774,37 @@
           };
         }
 
-        let botText =
-          this._extractResponse(
-            data
-          ) || '';
-
-        const botButtons =
-          Array.isArray(
-            data.buttons
-          )
-            ? data.buttons
-            : [];
-
         this._hideTyping();
 
         /*
          * CRITICAL FRONTEND SAFETY.
          *
-         * Even if the AI returns a stale
-         * Welcome / What are we celebrating?
-         * response, it will NEVER be displayed
-         * during verification resume.
+         * On verification resume the ONLY
+         * reply shown is the fixed approval
+         * prompt below. The AI's response text
+         * is never displayed here, so a stale
+         * Welcome / first-look message can't
+         * leak into the resumed conversation.
+         * The next user Yes is marked as a
+         * resumed approval (see below).
          */
-        const isCorrectFirstLook =
-          /do you like this design/i
-            .test(
-              botText
-            );
-
-        if (
-          !isCorrectFirstLook
-        ) {
-
-          botText =
-            'Your email is confirmed! ✨\n\n' +
-            '**Do you like this design?**\n\n' +
-            '**[Yes/NO]**\n';
-        }
-
         this._addMessage(
-          botText,
+          'Your email is confirmed!\n' +
+          'Do you like this design?',
           'bot',
           [],
-          botButtons.length
-            ? botButtons
-            : [
-                'Yes',
-                'No'
-              ]
+          [
+            'Yes',
+            'No'
+          ]
         );
 
         this.resumeCompleted =
           true;
+
+        this.bbkResumedSession = true;
+        this.bbkResumeApprovalPending = true;
+        this.bbkResumedMockupApproved = false;
 
         this.resumeInProgress =
           false;
@@ -3030,6 +3014,14 @@
             previousBotText
           );
 
+      // A Yes to the FIRST restored mockup after verification is NOT
+      // a request for another mockup. Carry this stage marker to n8n.
+      const bbkResumeApprovalYes =
+        this.bbkResumedSession === true &&
+        this.bbkResumeApprovalPending === true &&
+        isMockupApproval &&
+        /^(yes|y|approved|looks good|i like it|confirm|confirmed)\s*[!.]?$/i.test(message);
+
       if (
         normalized === 'skip' &&
         isReferenceStep &&
@@ -3124,6 +3116,10 @@
             this.sessionId
           );
 
+          fd.append('bbkResumedSession', String(this.bbkResumedSession === true));
+          fd.append('bbkResumeApprovalPending', String(bbkResumeApprovalYes));
+          fd.append('bbkResumedMockupApproved', String(this.bbkResumedMockupApproved === true));
+
           fd.append(
             'history',
             JSON.stringify(
@@ -3199,6 +3195,10 @@
                     sessionId:
                       this.sessionId,
 
+                    bbkResumedSession: this.bbkResumedSession === true,
+                    bbkResumeApprovalPending: bbkResumeApprovalYes,
+                    bbkResumedMockupApproved: this.bbkResumedMockupApproved === true,
+
                     history
                   })
               },
@@ -3240,6 +3240,13 @@
           this._extractResponse(
             data
           );
+
+        if (bbkResumeApprovalYes &&
+            !data.error && !data.errorMessage &&
+            /what(?:'|’| i)s your full name/i.test(String(botText || ''))) {
+          this.bbkResumeApprovalPending = false;
+          this.bbkResumedMockupApproved = true;
+        }
 
         const botButtons =
           Array.isArray(
